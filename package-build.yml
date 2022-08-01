@@ -21,7 +21,7 @@ spec:
           - ytt:
               paths:
               - '-'
-              - bundle.yaml
+              - carvel/bundle.yaml
       export:
       - imgpkgBundle:
           image: registry.local:5000/service-bindings/bundle
