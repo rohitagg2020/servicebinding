@@ -79,7 +79,10 @@ jobs:
         echo "##[group]Build Service Bindings"
           cp hack/boilerplate/boilerplate.yaml.txt config/service-bindings.yaml
           ytt -f config -f carvel/release-version.overlay.yaml --data-value version=${slug} >> config/service-bindings.yaml
-          ./carvel-kapp-controller/cli/kctrl pkg release -y
+          echo "--------------------ROHIT---------------"
+          ls -l carvel-kapp-controller/cli/
+          echo "--------------------ROHIT---------------"
+          ./carvel-kapp-controller/cli/kctrl pkg release -y --debug -v ${slug}
         echo "##[endgroup]"
 
   acceptance:
