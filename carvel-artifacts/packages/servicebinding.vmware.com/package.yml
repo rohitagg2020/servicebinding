@@ -2,17 +2,17 @@ apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
   creationTimestamp: null
-  name: servicebinding.vmware.com.0.0.0+build.1659424416
+  name: servicebinding.vmware.com.0.0.0+build.1659429651
 spec:
   refName: servicebinding.vmware.com
-  releasedAt: "2022-08-02T07:14:20Z"
+  releasedAt: "2022-08-02T08:41:35Z"
   template:
     spec:
       deploy:
       - kapp: {}
       fetch:
       - imgpkgBundle:
-          image: registry.local:5000/service-bindings/bundle@sha256:10754c8d64240a6002768fe3ec85b22e2783582f61288d616c99bb8cd8553de9
+          image: registry.local:5000/service-bindings/bundle@sha256:d09829133015ea0c360c9b95f22e7448283311fa27196d44236a58b1853b5312
       template:
       - kbld:
           paths:
@@ -26,4 +26,4 @@ spec:
     openAPIv3:
       default: null
       nullable: true
-  version: 0.0.0+build.1659424416
+  version: 0.0.0+build.1659429651
