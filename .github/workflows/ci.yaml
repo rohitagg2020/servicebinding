@@ -65,6 +65,14 @@ jobs:
           registry:2
         # Make the $REGISTRY_NAME -> 127.0.0.1
         echo "127.0.0.1 $REGISTRY_NAME" | sudo tee -a /etc/hosts
+    - name: Install kind
+      run: |
+        cd $(mktemp -d -t kind.XXXX)
+        curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-$(go env GOHOSTOS)-$(go env GOHOSTARCH)
+        chmod +x ./kind
+        sudo mv ./kind /usr/local/bin
+        cd -
+        kind create cluster
     - name: Stage
       run: |
         set -o errexit
