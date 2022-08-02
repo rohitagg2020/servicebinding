@@ -16,7 +16,7 @@ jobs:
     - name: Install yq
       run: |
         brew install yq
-        yq version
+        yq -h
     - name: Test
       run: go test ./... -coverprofile cover.out
     - name: Upload coverage to Codecov
