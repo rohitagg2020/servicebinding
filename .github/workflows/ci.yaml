@@ -86,14 +86,30 @@ jobs:
         echo "##[group]Build Service Bindings"
           cp hack/boilerplate/boilerplate.yaml.txt config/service-bindings.yaml
           ytt -f config -f carvel/release-version.overlay.yaml --data-value version=${slug} >> config/service-bindings.yaml
-          echo "--------------------ROHIT---------------"
-          ls -l .
-          echo "--------------------ROHIT---------------"
-          ls -l carvel-kapp-controller/cli/
-          echo "--------------------ROHIT---------------"
-          ./carvel-kapp-controller/cli/kctrl version
           ./carvel-kapp-controller/cli/kctrl pkg release -y --debug -v ${slug} --tty=true
         echo "##[endgroup]"
+
+        echo "##[group]Copy bundle"
+          imgpkg push -f "bundle" -b "${BUNDLE}"
+          imgpkg copy -b "${BUNDLE}" --to-tar bundle/service-bindings-bundle.tar
+        echo "##[endgroup]"
+    - name: Upload Service Bindings build
+      uses: actions/upload-artifact@v3
+      with:
+        name: service-bindings-bundle.tar
+        path: bundle/service-bindings-bundle.tar
+    - name: Grype scan
+      run: |
+        echo "##[group]Install grype"
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+        echo "##[endgroup]"
+        echo "##[group]Scan source ."
+          grype dir:. --exclude ./hack
+        echo "##[endgroup]"
+        echo "##[group]Scan manager image"
+          grype registry:registry.local:5000/service-bindings/manager:latest
+        echo "##[endgroup]"
+      continue-on-error: true
 
   acceptance:
     needs: stage
