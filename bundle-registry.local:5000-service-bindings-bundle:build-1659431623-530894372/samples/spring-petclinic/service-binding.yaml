@@ -1,0 +1,18 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: servicebinding.io/v1beta1
+kind: ServiceBinding
+metadata:
+  name: spring-petclinic-db
+spec:
+  # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
+  service:
+    apiVersion: v1
+    kind: Secret
+    name: spring-petclinic-db
+  workload:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: spring-petclinic

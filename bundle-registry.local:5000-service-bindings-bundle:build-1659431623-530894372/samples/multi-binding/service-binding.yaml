@@ -1,0 +1,44 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: servicebinding.io/v1beta1
+kind: ServiceBinding
+metadata:
+  name: multi-binding-1
+  labels:
+    multi-binding: "true"
+spec:
+  # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
+  service:
+    apiVersion: v1
+    kind: Secret
+    name: multi-binding-1
+  workload:
+    apiVersion: batch/v1
+    kind: Job
+    name: multi-binding
+  env:
+  - name: MULTI_BINDING_1
+    key: number
+
+---
+apiVersion: servicebinding.io/v1beta1
+kind: ServiceBinding
+metadata:
+  name: multi-binding-2
+  labels:
+    multi-binding: "true"
+spec:
+  # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
+  service:
+    apiVersion: v1
+    kind: Secret
+    name: multi-binding-2
+  workload:
+    apiVersion: batch/v1
+    kind: Job
+    name: multi-binding
+  env:
+  - name: MULTI_BINDING_2
+    key: number

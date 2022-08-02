@@ -1,0 +1,27 @@
+# Copyright 2020 VMware, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: servicebinding.io/v1beta1
+kind: ServiceBinding
+metadata:
+  name: overridden-type-provider
+  labels:
+    sample: overridden-type-provider
+spec:
+  type: overridden-type
+  provider: overridden-provider
+  # direct Secret reference is used for compatibility, but not recommended for dynamically provisioned services
+  service:
+    apiVersion: v1
+    kind: Secret
+    name: overridden-type-provider
+  workload:
+    apiVersion: batch/v1
+    kind: Job
+    name: overridden-type-provider
+  env:
+  - name: BOUND_TYPE
+    key: type
+  - name: BOUND_PROVIDER
+    key: provider

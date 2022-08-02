@@ -65,12 +65,12 @@ jobs:
           registry:2
         # Make the $REGISTRY_NAME -> 127.0.0.1
         echo "127.0.0.1 $REGISTRY_NAME" | sudo tee -a /etc/hosts
-    - name: Setup Minikube
+    - name: Setting up minikube
       run: |
-        curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-        install minikube-linux-amd64 /usr/local/bin/minikube
-        minikube start --driver=docker
-        eval $(minikube docker-env --shell=bash)
+        set -e -x
+        minikube start --driver=docker --wait=all
+        docker buildx create minikube --use --driver=kubernetes --bootstrap
+
     - name: Stage
       run: |
         set -o errexit
