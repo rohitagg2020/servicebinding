@@ -13,10 +13,6 @@ jobs:
     - uses: actions/setup-go@v3
       with:
         go-version: 1.17.6
-    - name: Install yq
-      run: |
-        brew install yq
-        yq -h
     - name: Test
       run: go test ./... -coverprofile cover.out
     - name: Upload coverage to Codecov
@@ -37,7 +33,6 @@ jobs:
         go-version: 1.17.6
     - uses: vmware-tanzu/carvel-setup-action@v1
     - run: |
-        yq version
         imgpkg version
         kbld version
         ytt version
@@ -75,7 +70,11 @@ jobs:
         set -e -x
         minikube start --driver=docker --wait=all
         docker buildx create minikube --use --driver=kubernetes --bootstrap
-
+    - name: Install yq
+      run: |
+        brew install yq
+        yq -h
+    
     - name: Stage
       run: |
         set -o errexit
@@ -95,7 +94,8 @@ jobs:
         echo "##[endgroup]"
 
         echo "##[group]Copy bundle"
-          imgpkg copy -b "${BUNDLE}" --to-tar bundle/service-bindings-bundle.tar
+          abc=`yq eval '(.spec.template.spec.fetch[].imgpkgBundle.image)' carvel-artifacts/packages/servicebinding.vmware.com/package.yml`
+          imgpkg copy -b "${abc}" --to-tar bundle/service-bindings-bundle.tar
         echo "##[endgroup]"
     - name: Upload Service Bindings build
       uses: actions/upload-artifact@v3
