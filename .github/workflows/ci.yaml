@@ -9,6 +9,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: 1.17.6
     - name: Install yq
       run: |
         cd $(mktemp -d -t yq.XXXX)
@@ -16,10 +20,6 @@ jobs:
         sudo mv ./yq_linux_amd64 /usr/local/bin/yq
         cd -
         yq version
-    - uses: actions/checkout@v3
-    - uses: actions/setup-go@v3
-      with:
-        go-version: 1.17.6
     - name: Test
       run: go test ./... -coverprofile cover.out
     - name: Upload coverage to Codecov
