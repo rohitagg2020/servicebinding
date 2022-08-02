@@ -71,6 +71,7 @@ jobs:
         set -o nounset
         set -o pipefail
 
+        mkdir .imgpkg
         readonly version=$(cat VERSION)
         readonly git_sha=$(git rev-parse HEAD)
         readonly git_timestamp=$(TZ=UTC git show --quiet --date='format-local:%Y%m%d%H%M%S' --format="%cd")
@@ -80,8 +81,11 @@ jobs:
           cp hack/boilerplate/boilerplate.yaml.txt config/service-bindings.yaml
           ytt -f config -f carvel/release-version.overlay.yaml --data-value version=${slug} >> config/service-bindings.yaml
           echo "--------------------ROHIT---------------"
+          ls -l .
+          echo "--------------------ROHIT---------------"
           ls -l carvel-kapp-controller/cli/
           echo "--------------------ROHIT---------------"
+          ./carvel-kapp-controller/cli/kctrl version
           ./carvel-kapp-controller/cli/kctrl pkg release -y --debug -v ${slug}
         echo "##[endgroup]"
 
