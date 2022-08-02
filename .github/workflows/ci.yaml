@@ -90,7 +90,6 @@ jobs:
         echo "##[endgroup]"
 
         echo "##[group]Copy bundle"
-          imgpkg push -f "bundle" -b "${BUNDLE}"
           imgpkg copy -b "${BUNDLE}" --to-tar bundle/service-bindings-bundle.tar
         echo "##[endgroup]"
     - name: Upload Service Bindings build
