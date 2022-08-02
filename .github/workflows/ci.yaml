@@ -86,7 +86,7 @@ jobs:
           ls -l carvel-kapp-controller/cli/
           echo "--------------------ROHIT---------------"
           ./carvel-kapp-controller/cli/kctrl version
-          ./carvel-kapp-controller/cli/kctrl pkg release -y --debug -v ${slug}
+          ./carvel-kapp-controller/cli/kctrl pkg release -y --debug -v ${slug} --tty=true
         echo "##[endgroup]"
 
   acceptance:
