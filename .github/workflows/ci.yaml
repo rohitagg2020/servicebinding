@@ -16,10 +16,6 @@ jobs:
     - name: Install yq
       run: |
         brew install yq
-        cd $(mktemp -d -t yq.XXXX)
-        wget -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-        sudo mv ./yq_linux_amd64 /usr/local/bin/yq
-        cd -
         yq version
     - name: Test
       run: go test ./... -coverprofile cover.out
