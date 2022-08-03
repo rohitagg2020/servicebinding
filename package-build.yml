@@ -2,7 +2,7 @@ apiVersion: kctrl.carvel.dev/v1alpha1
 kind: PackageBuild
 metadata:
   creationTimestamp: "2022-07-18T15:32:27Z"
-  name: servicebinding.vmware.com
+  name: service-bindings.labs.vmware.com
 spec:
   release:
   - resource: {}
@@ -35,4 +35,3 @@ spec:
         - config/service-bindings.yaml
         - carvel/build.yml
         - carvel/release.yml
-
