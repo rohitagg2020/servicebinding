@@ -91,7 +91,7 @@ jobs:
 
         echo "##[group]Copy bundle"
           mkdir bundle
-          imgpkgBundleURL=`yq eval '(.spec.template.spec.fetch[].imgpkgBundle.image)' carvel-artifacts/packages/servicebinding.vmware.com/package.yml`
+          imgpkgBundleURL=`yq eval '(.spec.template.spec.fetch[].imgpkgBundle.image)' carvel-artifacts/packages/service-bindings.labs.vmware.com/package.yml`
           imgpkg copy -b "${imgpkgBundleURL}" --to-tar bundle/service-bindings-bundle.tar
         echo "##[endgroup]"
     - name: Upload Service Bindings build
