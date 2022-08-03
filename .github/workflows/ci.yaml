@@ -32,13 +32,45 @@ jobs:
         imgpkg version
         kbld version
         ytt version
-    
+    - name: Fetch kctrl
+      uses: actions/checkout@v3
+      with:
+        ref: kctrl-pkg-init-release
+        repository: vmware-tanzu/carvel-kapp-controller
+        path: carvel-kapp-controller
+        fetch-depth: 0
+    - name: Build kctrl
+      working-directory: ./carvel-kapp-controller/cli
+      run: |
+        ./hack/build.sh
+
     - name: Install ko
       run: |
         cd $(mktemp -d -t ko.XXXX)
         curl -sL https://github.com/google/ko/releases/download/v0.8.1/ko_0.8.1_Linux_x86_64.tar.gz | tar -xz
         sudo mv ./ko /usr/local/bin
         cd -
+    - name: Setup local registry
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+        # Run a registry.
+        docker run \
+          -d --restart=always -p "127.0.0.1:${REGISTRY_PORT}:5000" --name local-registry \
+          registry:2
+        # Make the $REGISTRY_NAME -> 127.0.0.1
+        echo "127.0.0.1 $REGISTRY_NAME" | sudo tee -a /etc/hosts
+    - name: Setting up minikube
+      run: |
+        set -e -x
+        minikube start --driver=docker --wait=all
+        docker buildx create minikube --use --driver=kubernetes --bootstrap
+    - name: Install yq
+      run: |
+        brew install yq
+        yq -h
+    
     - name: Stage
       run: |
         set -o errexit
@@ -54,7 +86,36 @@ jobs:
         echo "##[group]Build Service Bindings"
           cp hack/boilerplate/boilerplate.yaml.txt config/service-bindings.yaml
           ytt -f config -f carvel/release-version.overlay.yaml --data-value version=${slug} >> config/service-bindings.yaml
+          ./carvel-kapp-controller/cli/kctrl pkg release -y --debug -v ${slug} --tty=true
         echo "##[endgroup]"
+
+        echo "##[group]Copy bundle"
+          mkdir bundle
+          imgpkgBundleURL=`yq eval '(.spec.template.spec.fetch[].imgpkgBundle.image)' carvel-artifacts/packages/servicebinding.vmware.com/package.yml`
+          imgpkg copy -b "${imgpkgBundleURL}" --to-tar bundle/service-bindings-bundle.tar
+        echo "##[endgroup]"
+    - name: Upload Service Bindings build
+      uses: actions/upload-artifact@v3
+      with:
+        name: service-bindings-bundle.tar
+        path: bundle/service-bindings-bundle.tar
+    - name: Upload Service Binding Package
+      uses: actions/upload-artifact@v3
+      with:
+        name: package.yml
+        path: carvel-artifacts/packages/servicebinding.vmware.com/package.yml
+    - name: Grype scan
+      run: |
+        echo "##[group]Install grype"
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+        echo "##[endgroup]"
+        echo "##[group]Scan source ."
+          grype dir:. --exclude ./hack
+        echo "##[endgroup]"
+        echo "##[group]Scan manager image"
+          grype registry:registry.local:5000/service-bindings/manage:latest
+        echo "##[endgroup]"
+      continue-on-error: true
 
   acceptance:
     needs: stage
@@ -132,24 +193,40 @@ jobs:
             host: "localhost:${REGISTRY_PORT}"
             help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
         EOF
-    - name: Fetch kctrl dev deploy branch
-      uses: actions/checkout@v3
+    - name: Download staged Service Bindings build
+      uses: actions/download-artifact@v3
       with:
-        ref: kctrl-dev-deploy
-        repository: vmware-tanzu/carvel-kapp-controller
-        path: carvel-kapp-controller
-        fetch-depth: 0
-    - name: Build kctrl
-      working-directory: ./carvel-kapp-controller/cli
-      run: |
-        ./hack/build.sh
-    - name: Run kctrl dev deploy
+        name: service-bindings-bundle.tar
+    - name: Download staged Service Bindings Package
+      uses: actions/download-artifact@v3
+      with:
+        name: package.yml
+    - name: Install kapp-controller
       run: |
         set -o errexit
         set -o nounset
         set -o pipefail
+        kapp deploy -a kapp-controller -y -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/download/v0.36.1/release.yml
+    - name: Deploy Service Bindings Package
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+        imgpkg copy --tar service-bindings-bundle.tar --to-repo "${BUNDLE}"
         ls -la
-        ./carvel-kapp-controller/cli/kctrl dev deploy -f package-resources.yml --debug --local -b
+        kapp deploy -a service-bindings-package -f package.yml -y
+    - name: Deploy Service Bindings
+      run: |
+        set -o errexit
+        set -o nounset
+        set -o pipefail
+        kapp deploy -a service-bindings -y \
+          -f <( \
+            ytt -f carvel/package-install.yaml -f carvel/package-install.values.yaml \
+              --data-value package_constraints=$(cat VERSION) \
+              --data-value-yaml 'package_prerelease={}' \
+              --data-value sync_period=10s \
+          )
     - name: Deploy Spring Petclinic
       run: |
         set -o errexit
@@ -176,6 +253,11 @@ jobs:
         echo "##[group]Describe pods"
           kubectl describe pods
         echo "##[endgroup]"
+        echo "##[group]Packages"
+          kubectl get package -A -oyaml
+        echo "##[endgroup]"
+        echo "##[group]Package Installs"
+          kubectl get packageinstall -A -oyaml
         echo "##[endgroup]"
         echo "##[group]Kapp list apps"
           kapp list -A
@@ -210,18 +292,6 @@ jobs:
           echo "Too many app changes for the service-binding package, expected 1 found ${deploys}"
           exit 1
         fi
-    - name: Grype scan
-      run: |
-        echo "##[group]Install grype"
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
-        echo "##[endgroup]"
-        echo "##[group]Scan source ."
-          grype dir:. --exclude ./hack
-        echo "##[endgroup]"
-        echo "##[group]Scan manager image"
-          grype registry:registry.local:5000/service-bindings/manager:latest
-        echo "##[endgroup]"
-      continue-on-error: true
     - name: Cleanup Spring Petclinic
       run: |
         set -o errexit
@@ -241,8 +311,8 @@ jobs:
       if: always()
     - name: Cleanup cluster
       run: kind delete cluster
-      if: always()  
-    
+      if: always()
+
   release:
     needs: acceptance
     if: startsWith(github.ref, 'refs/tags/')
@@ -256,16 +326,7 @@ jobs:
         imgpkg version
         kbld version
         ytt version
-    
-    - name: Setting up minikube
-      run: |
-        set -e -x
-        minikube start --driver=docker --wait=all
-        docker buildx create minikube --use --driver=kubernetes --bootstrap
-    - name: Install yq
-      run: |
-        brew install yq
-        yq -h
+        
     - name: Install crane
       run: |
         cd $(mktemp -d -t kind.XXXX)
@@ -283,24 +344,6 @@ jobs:
       id: get-version
       run: |
         echo ::set-output name=version::$(cat VERSION)
-    - name: Cleanup previous kctrl
-      run: |
-        rm -rf ./carvel-kapp-controller
-    - name: Fetch kctrl init release branch
-      uses: actions/checkout@v3
-      with:
-        ref: kctrl-pkg-init-release
-        repository: vmware-tanzu/carvel-kapp-controller
-        path: carvel-kapp-controller
-        fetch-depth: 0
-    - name: Build kctrl
-      working-directory: ./carvel-kapp-controller/cli
-      run: |
-        ./hack/build.sh
-
-    - name: Run kctrl pkg release
-      run: |
-        ./carvel-kapp-controller/cli/kctrl pkg release -y --debug -v ${version} --tty=true
     - name: Draft release
       id: create_release
       uses: actions/create-release@v1.1.4
