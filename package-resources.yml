@@ -2,9 +2,9 @@ apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
   creationTimestamp: "2022-07-05T04:45:24Z"
-  name: servicebinding.vmware.com.0.0.0
+  name: servicebindings.vmware.com.0.0.0
 spec:
-  refName: servicebinding.vmware.com
+  refName: servicebindings.vmware.com
   releasedAt: "2022-07-05T04:45:24Z"
   template:
     spec:
@@ -30,11 +30,11 @@ apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: PackageMetadata
 metadata:
   creationTimestamp: "2022-07-05T04:45:24Z"
-  name: servicebinding.vmware.com
+  name: servicebindings.vmware.com
 spec:
-  displayName: servicebinding
-  longDescription: servicebinding.vmware.com
-  shortDescription: servicebinding.vmware.com
+  displayName: servicebindings
+  longDescription: servicebindings.vmware.com
+  shortDescription: servicebindings.vmware.com
 ---
 apiVersion: packaging.carvel.dev/v1alpha1
 kind: PackageInstall
@@ -42,10 +42,10 @@ metadata:
   annotations:
     kctrl.carvel.dev/local-fetch-0: .
   creationTimestamp: "2022-07-05T04:45:24Z"
-  name: servicebinding
+  name: servicebindings
 spec:
   packageRef:
-    refName: servicebinding.vmware.com
+    refName: servicebindings.vmware.com
     versionSelection:
       constraints: 0.0.0
   serviceAccountName: default-ns-saa
