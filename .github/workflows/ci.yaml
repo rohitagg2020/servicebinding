@@ -103,7 +103,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: package.yml
-        path: carvel-artifacts/packages/servicebinding.vmware.com/package.yml
+        path: carvel-artifacts/packages/service-bindings.labs.vmware.com/package.yml
     - name: Grype scan
       run: |
         echo "##[group]Install grype"
