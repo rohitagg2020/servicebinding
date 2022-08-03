@@ -32,18 +32,7 @@ jobs:
         imgpkg version
         kbld version
         ytt version
-    - name: Fetch kctrl dev deploy branch
-      uses: actions/checkout@v3
-      with:
-        ref: kctrl-dev-deploy
-        repository: vmware-tanzu/carvel-kapp-controller
-        path: carvel-kapp-controller
-        fetch-depth: 0
-    - name: Build kctrl
-      working-directory: ./carvel-kapp-controller/cli
-      run: |
-        ./hack/build.sh
-
+    
     - name: Install ko
       run: |
         cd $(mktemp -d -t ko.XXXX)
@@ -143,6 +132,17 @@ jobs:
             host: "localhost:${REGISTRY_PORT}"
             help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
         EOF
+    - name: Fetch kctrl dev deploy branch
+      uses: actions/checkout@v3
+      with:
+        ref: kctrl-dev-deploy
+        repository: vmware-tanzu/carvel-kapp-controller
+        path: carvel-kapp-controller
+        fetch-depth: 0
+    - name: Build kctrl
+      working-directory: ./carvel-kapp-controller/cli
+      run: |
+        ./hack/build.sh
     - name: Run kctrl dev deploy
       run: |
         set -o errexit

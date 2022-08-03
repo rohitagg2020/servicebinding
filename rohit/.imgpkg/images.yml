@@ -1,0 +1,7 @@
+---
+apiVersion: imgpkg.carvel.dev/v1alpha1
+images:
+- annotations:
+    kbld.carvel.dev/id: registry.local:5000/service-bindings/manager@sha256:1a6bb9bb0226046667066464d0a2fc095c5e7431694b19750fc3c9c4e2b8185e
+  image: index.docker.io/vmware/labs-service-bindings-manager@sha256:1a6bb9bb0226046667066464d0a2fc095c5e7431694b19750fc3c9c4e2b8185e
+kind: ImagesLock

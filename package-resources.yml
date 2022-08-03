@@ -2,19 +2,26 @@ apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: Package
 metadata:
   creationTimestamp: "2022-07-05T04:45:24Z"
-  name: samplepackage.corp.com.0.0.0
+  name: servicebinding.vmware.com.0.0.0
 spec:
-  refName: samplepackage.corp.com
+  refName: servicebinding.vmware.com
   releasedAt: "2022-07-05T04:45:24Z"
   template:
     spec:
+      fetch:
+      - git: {} # unused
       deploy:
       - kapp: {}
       template:
       - ytt:
           paths:
-          - upstream
-      - kbld: {}
+          - config/service-bindings.yaml
+          - carvel/build.yml
+          - carvel/release.yml
+          - carvel/bundle.yaml
+      - kbld:
+          paths:
+          - '-'
   valuesSchema:
     openAPIv3: null
   version: 0.0.0
@@ -23,11 +30,11 @@ apiVersion: data.packaging.carvel.dev/v1alpha1
 kind: PackageMetadata
 metadata:
   creationTimestamp: "2022-07-05T04:45:24Z"
-  name: samplepackage.corp.com
+  name: servicebinding.vmware.com
 spec:
-  displayName: samplepackage
-  longDescription: samplepackage.corp.com
-  shortDescription: samplepackage.corp.com
+  displayName: servicebinding
+  longDescription: servicebinding.vmware.com
+  shortDescription: servicebinding.vmware.com
 ---
 apiVersion: packaging.carvel.dev/v1alpha1
 kind: PackageInstall
@@ -35,11 +42,13 @@ metadata:
   annotations:
     kctrl.carvel.dev/local-fetch-0: .
   creationTimestamp: "2022-07-05T04:45:24Z"
-  name: samplepackage
+  name: servicebinding
 spec:
   packageRef:
-    refName: samplepackage.corp.com
-  serviceAccountName: samplepackage-sa
+    refName: servicebinding.vmware.com
+    versionSelection:
+      constraints: 0.0.0
+  serviceAccountName: default-ns-saa
 status:
   conditions: null
   friendlyDescription: ""

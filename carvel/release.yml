@@ -4,4 +4,5 @@ kind: Config
 destinations:
 - image: service-binding-img
   newImage: registry.local:5000/service-bindings
+  #newImage: docker.io/rohitagg2020/service-bindings
   #newImage: BUNDLE
