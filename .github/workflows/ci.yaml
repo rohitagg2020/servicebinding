@@ -148,6 +148,7 @@ jobs:
         set -o errexit
         set -o nounset
         set -o pipefail
+        ls -la
         ./carvel-kapp-controller/cli/kctrl dev deploy -f package-resources.yml --debug --local -b
     - name: Deploy Spring Petclinic
       run: |
