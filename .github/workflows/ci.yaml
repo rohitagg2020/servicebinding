@@ -123,11 +123,6 @@ jobs:
     strategy:
       matrix:
         k8s:
-        - 1.18.20
-        - 1.19.16
-        - 1.20.15
-        - 1.21.12
-        - 1.22.9
         - 1.23.6
       fail-fast: false
     env:
@@ -215,6 +210,7 @@ jobs:
         imgpkg copy --tar service-bindings-bundle.tar --to-repo "${BUNDLE}"
         ls -la
         kapp deploy -a service-bindings-package -f package.yml -y
+        docker images -a
     - name: Deploy Service Bindings
       run: |
         set -o errexit
@@ -227,6 +223,7 @@ jobs:
               --data-value-yaml 'package_prerelease={}' \
               --data-value sync_period=10s \
           )
+        kubectl describe packageinstall/service-bindings -oyaml
     - name: Deploy Spring Petclinic
       run: |
         set -o errexit
